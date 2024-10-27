@@ -10,7 +10,8 @@
 
 using namespace std;
 
-void initialize(string name, ifstream& inFile, int numOfpform,accounts**& arr2p);
+void initialize(string name, ifstream& inFile, int numOfpform,
+                accounts**& arr2p);
 void passwordAsk(int numOfpform, accounts**& arr2p);
 void resetPassword(int numOfpform, accounts**& arr2p);
 void Update(string name, int numOfpform, accounts**& arr2p);
@@ -19,17 +20,16 @@ void addAccount(accounts& arr2p, int& numOfpform);
 int passwordChecker(const string& password);
 int movingThroughThePasswords(accounts** arr2p, int numOfpform,
                               string* usedPasswords, int& usedCount);
-void softwareUpdate(accounts**& arr2p, int numOfpform, int& counter, bool& updateInProgress);
+void softwareUpdate(accounts**& arr2p, int numOfpform, int& counter,
+                    bool& updateInProgress);
 bool tenPercent();
 int ranNum(int num);
 int checkrepeats(int usedCount, accounts**& arr2p);
 
-string commands[4] = {
-    "CheckAccounts",                 // 0
-    "ResetPassword",                 // 1
-    "CheckTwoFactorAuthentication",  // 2
-    "UpdateAccount",                 // 3
-};
+string commands[3] = {"CheckAccounts",   // 0
+                      "ResetPassword",   // 1
+                      "AddAccount",      // 2
+                      "RemoveAccount"};  // 3
 
 int main() {
   string name;
@@ -65,16 +65,16 @@ int main() {
 
     switch (whichCommand) {
       case 0:
-        // checkAccount()
+        movingThroughThePasswords(arr2p, numOfpform);
         break;
       case 1:
         resetPassword(numOfpform, arr2p);
         break;
       case 2:
-        // CheckTwoFactorAuthentication
+        addAccount(arr2p, numOfpform);
         break;
       case 3:
-        // update account;
+        removeAccount(arr2p, numOfpform);
         break;
     }
 
@@ -129,7 +129,8 @@ int ranNum(int num) {
                         // the accounts.
 }
 
-void initialize(string name, ifstream& inFile, int numOfpform,accounts**& arr2p) {
+void initialize(string name, ifstream& inFile, int numOfpform,
+                accounts**& arr2p) {
   cout << "Hi, it is nice to meet you. I'm your personal defendimal" << endl;
   cout << "What do you want to name me?: ";
   cin >> name;
@@ -181,14 +182,12 @@ void addAccount(accounts**& arr2p, int& numOfpform) {
 
   if (tfaResponse == "y" || tfaResponse == "Y") {
     twoFA = true;
-  } else { 
-    twoFA = false; 
-    }
-  
+  } else {
+    twoFA = false;
+  }
 
-  arr2p[numOfpform] = new accounts(platform, password, twoFA); 
+  arr2p[numOfpform] = new accounts(platform, password, twoFA);
   numOfpform++;
-
 }
 
 void removeAccount(accounts**& arr2p, int& numOfpform) {
@@ -239,36 +238,41 @@ void removeAccount(accounts**& arr2p, int& numOfpform) {
 
 // Function to check password strength
 int passwordChecker(const string& password) {
-    int score = 0;
+  int score = 0;
 
-    if (password.length() < 8) {
-        cout << "Password is less than 8 characters. Please enter a new password." << endl;
-        return score;
-    } else {
-        score++;
-    }
-
-    bool hasLower = false, hasUpper = false, hasDigit = false, hasSpecial = false;
-
-    for (char c : password) {
-        if (islower(c)) hasLower = true;
-        else if (isupper(c)) hasUpper = true;
-        else if (isdigit(c)) hasDigit = true;
-        else hasSpecial = true;
-    }
-
-    // Increment score based on the presence of each character type
-    if (hasLower) score++;
-    if (hasUpper) score++;
-    if (hasDigit) score++;
-    if (hasSpecial) score++;
-
-    string strength = (score >= 4) ? "Strong" : (score == 3 ? "Moderate" : "Weak");
-    cout << "Password strength is " << strength << ". Score: " << score << endl;
-
+  if (password.length() < 8) {
+    cout << "Password is less than 8 characters. Please enter a new password."
+         << endl;
     return score;
-}
+  } else {
+    score++;
+  }
 
+  bool hasLower = false, hasUpper = false, hasDigit = false, hasSpecial = false;
+
+  for (char c : password) {
+    if (islower(c))
+      hasLower = true;
+    else if (isupper(c))
+      hasUpper = true;
+    else if (isdigit(c))
+      hasDigit = true;
+    else
+      hasSpecial = true;
+  }
+
+  // Increment score based on the presence of each character type
+  if (hasLower) score++;
+  if (hasUpper) score++;
+  if (hasDigit) score++;
+  if (hasSpecial) score++;
+
+  string strength =
+      (score >= 4) ? "Strong" : (score == 3 ? "Moderate" : "Weak");
+  cout << "Password strength is " << strength << ". Score: " << score << endl;
+
+  return score;
+}
 
 //
 // Function to check passwords for each account in the array
@@ -283,9 +287,7 @@ int movingThroughThePasswords(accounts**& arr2p, int numOfpform,
     string password = arr2p[i]->getPassword();
     int score = passwordChecker(password);
     totalScore += score;
-    cout << "Score for password of account "
-             << arr2p[i]->getPlatform() << 
-            ": "
+    cout << "Score for password of account " << arr2p[i]->getPlatform() << ": "
          << score << endl;
   }
 
@@ -306,7 +308,8 @@ int checkrepeats(int usedCount, accounts**& arr2p) {
   return 1;
 }
 
-void resetPassword(int numOfpform, accounts**& arr2p) {  // this is what i changes laila
+void resetPassword(int numOfpform,
+                   accounts**& arr2p) {  // this is what i changes laila
   string pf;
   string password;
   cout << "Which account do you want to update: ";
