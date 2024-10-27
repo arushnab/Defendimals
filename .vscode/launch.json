@@ -6,8 +6,8 @@
       "type": "lldb",
       "request": "launch",
       "args": [],
-      "cwd": "/Users/angelccc/Documents/GitHub/Defendimals",
-      "program": "/Users/angelccc/Documents/GitHub/Defendimals/build/Debug/outDebug"
+      "cwd": "/Users/angelccc/Documents/GitHub/Defendimals/FinalVersion",
+      "program": "/Users/angelccc/Documents/GitHub/Defendimals/FinalVersion/build/Debug/outDebug"
     }
   ]
 }
