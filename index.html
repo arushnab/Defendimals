@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defendimals - Your Personal Safety Companion</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f3f4f6;
+            color: #333;
+        }
+        h1, h2, h3, h4 {
+            color: #4a90e2;
+        }
+        #defendimals, #stats {
+            margin-top: 20px;
+            padding: 20px;
+            border: 2px solid #4a90e2;
+            border-radius: 10px;
+            display: inline-block;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        input[type="text"], input[type="password"], input[type="checkbox"] {
+            padding: 8px;
+            margin: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: calc(100% - 30px);
+        }
+        button {
+            padding: 8px 15px;
+            margin: 8px;
+            background-color: #4a90e2;
+            border: none;
+            color: #fff;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #357ab8;
+        }
+        #feedback {
+            font-weight: bold;
+            margin-top: 10px;
+            color: #e74c3c;
+        }
+        #accountsList {
+            margin-top: 10px;
+        }
+        #accountsList ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        #accountsList li {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-bottom: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to Defendimals!</h1>
+    <p>Hi there! I'm your personal safety companion. Please name me:</p>
+    <input type="text" id="petName" placeholder="Enter a name">
+    <button onclick="namePet()">Name Your Pet</button>
+
+    <div id="stats" style="display: none;">
+        <p>Pet Health: <span id="health">100</span></p>
+        <p>Pet Level: <span id="level">1</span></p>
+    </div>
+
+    <div id="defendimals" style="display: none;">
+        <h2 id="petNameDisplay"></h2>
+        <p>Manage your accounts with me!</p>
+
+        <!-- Account Management Section -->
+        <h3>Account Management</h3>
+        <input type="text" id="platform" placeholder="Enter platform name">
+        <input type="text" id="username" placeholder="Enter username">
+        <input type="password" id="password" placeholder="Enter password">
+        <label>
+            <input type="checkbox" id="twoFactorAuth"> Enable Two-Factor Authentication
+        </label>
+        <br>
+        <button onclick="addAccount()">Add Account</button>
+        <button onclick="checkPasswordStrength()">Check Password Strength</button>
+        <button onclick="removeAccount()">Remove Account</button>
+
+        <!-- Stored Accounts List -->
+        <div id="accountsList">
+            <h4>Stored Accounts:</h4>
+            <ul id="accounts"></ul>
+        </div>
+
+        <!-- URL Safety Checker -->
+        <h3>URL Safety Checker</h3>
+        <input type="text" id="website" placeholder="Enter a website URL">
+        <button onclick="checkWebsite()">Check URL Safety</button>
+        
+        <div id="feedback"></div>
+    </div>
+
+    <script src="defendimals.js"></script>
+</body>
+</html>
