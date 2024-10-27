@@ -5,6 +5,8 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <termios.h>
+#include <unistd.h>
 
 #include "accounts.h"
 
@@ -15,18 +17,19 @@ void initialize(string name, ifstream& inFile, int numOfpform,
 void passwordAsk(int numOfpform, accounts**& arr2p);
 void resetPassword(int numOfpform, accounts**& arr2p);
 void Update(string name, int numOfpform, accounts**& arr2p);
-void removeAccount(accounts& arr2p, int& numOfpform);
-void addAccount(accounts& arr2p, int& numOfpform);
-int passwordChecker(const string& password);
-int movingThroughThePasswords(accounts** arr2p, int numOfpform,
-                              string* usedPasswords, int& usedCount);
+void removeAccount(accounts**& arr2p, int& numOfpform);
+void addAccount(accounts**& arr2p, int& numOfpform);
+int passwordChecker(const string& password, bool shouldPrint);
+int movingThroughThePasswords(accounts**& arr2p, int numOfpform);
 void softwareUpdate(accounts**& arr2p, int numOfpform, int& counter,
                     bool& updateInProgress);
 bool tenPercent();
 int ranNum(int num);
 int checkrepeats(int usedCount, accounts**& arr2p);
+void animalState(accounts**& arr2p, int numOfpform);
+string getPassword();
 
-string commands[3] = {"CheckAccounts",   // 0
+string commands[4] = {"CheckAccounts",   // 0
                       "ResetPassword",   // 1
                       "AddAccount",      // 2
                       "RemoveAccount"};  // 3
@@ -40,6 +43,7 @@ int main() {
   inFile >> numOfpform;
   accounts** arr2p = new accounts*[numOfpform];
   initialize(name, inFile, numOfpform, arr2p);
+  animalState(arr2p, numOfpform);
 
   string line;
   string command;
@@ -85,8 +89,31 @@ int main() {
       cout.flush();
     }
 
+    animalState( arr2p, numOfpform);
     cout << ">>> ";
     cout.flush();
+    cin >> command;
+  }
+}
+
+void animalState(accounts**& arr2p, int numOfpform){
+  double val = 0;
+  for(int i = 0; i < numOfpform; i++){
+    val += passwordChecker(arr2p[i] -> getPassword(), false);
+  }
+
+  val = val / numOfpform;
+
+  cout << endl;
+  if(val >= 4.0){
+    cout << "I'm happy" << endl;
+    cout << "(^･o･^)ﾉ” " << endl << endl;
+  }else if(val <= 3.0 && val > 2.0){
+    cout << "I'm content" << endl;
+    cout << "₍˄·͈༝·͈˄₎◞ ̑̑" << endl << endl;
+  }else{
+    cout << "I'm sad" << endl;
+    cout << "/ᐠ ╥ ˕ ╥マ" << endl << endl;
   }
 }
 
@@ -138,7 +165,14 @@ void initialize(string name, ifstream& inFile, int numOfpform,
 
   cout << "In order to keep you safe I have access to the plateforms and its "
           "respective passwords"
-       << endl;
+       << endl << endl;
+
+  cout << "Type in the following command to interact with me!" << endl;
+  cout << "CheckAccounts" << endl;
+  cout << "ResetPassword" << endl;
+  cout << "AddAccount" << endl;
+  cout << "RemoveAccount" << endl << endl;
+
   string pform;
   string ps;
   bool tfa;
@@ -148,6 +182,12 @@ void initialize(string name, ifstream& inFile, int numOfpform,
 
   for (int i = 0; i < numOfpform; i++) {
     inFile >> pform;
+    if (inFile.fail() == true) {
+      inFile.clear();
+      inFile.ignore(1000, '\n');
+      inFile >> pform;
+    }
+
     inFile >> ps;
     inFile >> tfa;
     arr2p[i] = new accounts(pform, ps, tfa);
@@ -171,13 +211,13 @@ void addAccount(accounts**& arr2p, int& numOfpform) {
   string tfaResponse;
   bool twoFA;
 
-  cout << "Enter the platform for the account" << endl;
+  cout << "Enter the platform for the account: ";
   cin >> platform;
 
-  cout << "Enter the password for the account" << endl;
-  cin >> password;
+  //cout << "Enter the password for the account: ";
+  password = getPassword();
 
-  cout << "Do you have Two Factor Authentication Enabled? (Y/N)" << endl;
+  cout << "Do you have Two Factor Authentication Enabled? (Y/N): ";
   cin >> tfaResponse;
 
   if (tfaResponse == "y" || tfaResponse == "Y") {
@@ -197,8 +237,7 @@ void removeAccount(accounts**& arr2p, int& numOfpform) {
   }
   string platform;
 
-  cout << "What platform do you want to remove your account information for"
-       << endl;
+  cout << "What platform do you want to remove your account information for: ";
 
   cin >> platform;
 
@@ -237,12 +276,15 @@ void removeAccount(accounts**& arr2p, int& numOfpform) {
 }
 
 // Function to check password strength
-int passwordChecker(const string& password) {
+int passwordChecker(const string& password, bool shouldPrint) {
   int score = 0;
 
   if (password.length() < 8) {
-    cout << "Password is less than 8 characters. Please enter a new password."
-         << endl;
+    if (shouldPrint == true) {
+      cout << "Password is less than 8 characters. Please enter a new password."
+           << endl;
+    }
+
     return score;
   } else {
     score++;
@@ -267,25 +309,25 @@ int passwordChecker(const string& password) {
   if (hasDigit) score++;
   if (hasSpecial) score++;
 
-  string strength =
-      (score >= 4) ? "Strong" : (score == 3 ? "Moderate" : "Weak");
-  cout << "Password strength is " << strength << ". Score: " << score << endl;
+  if (shouldPrint == true) {
+    string strength =
+        (score >= 4) ? "Strong" : (score == 3 ? "Moderate" : "Weak");
+    cout << "Password strength is " << strength << ". Score: " << score << endl;
+  }
 
   return score;
 }
 
 //
 // Function to check passwords for each account in the array
-int movingThroughThePasswords(accounts**& arr2p, int numOfpform,
-                              string* usedPasswords) {
+int movingThroughThePasswords(accounts**& arr2p, int numOfpform) {
   int totalScore = 0;
 
   totalScore += checkrepeats(numOfpform, arr2p);
-
   // Iterate through each account and check the password
   for (int i = 0; i < numOfpform; ++i) {
     string password = arr2p[i]->getPassword();
-    int score = passwordChecker(password);
+    int score = passwordChecker(password, false);
     totalScore += score;
     cout << "Score for password of account " << arr2p[i]->getPlatform() << ": "
          << score << endl;
@@ -314,17 +356,17 @@ void resetPassword(int numOfpform,
   string password;
   cout << "Which account do you want to update: ";
   cin >> pf;
-  cout << "Type in your new password please: ";
 
   bool psIsStrong = false;
 
-  cin >> password;
+  password = getPassword();
+
   while (psIsStrong == false) {
-    if (passwordChecker(password) >= 5) {  // update the details of this later
+    if (passwordChecker(password, true) >= 4) {  // update the details of this later
       psIsStrong = true;
     } else {
-      cout << "Password isn't strong enough, please re-enter your password: ";
-      cin >> password;
+      cout << "Password isn't strong enough." << endl;
+      password = getPassword();
     }
   }
 
@@ -334,3 +376,68 @@ void resetPassword(int numOfpform,
     }
   }
 }
+
+string getPassword() {
+    string password;
+    char ch;
+
+    // Disable echoing
+    struct termios oldt, newt;
+    tcgetattr(STDIN_FILENO, &oldt); // Get current terminal settings
+    newt = oldt;
+    newt.c_lflag &= ~ECHO;          // Disable echo
+    newt.c_lflag &= ~ICANON;        // Disable canonical mode (character by character)
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt); // Set the new settings immediately
+
+    cout << "Enter password: ";
+
+    ch = getchar();
+    while (true) {
+        ch = getchar(); // Get character from input
+
+        if (ch == '\n') break; // Stop when Enter is pressed
+        
+        if (ch == 127 || ch == '\b') { // Handle backspace (127 is backspace on most systems)
+            if (!password.empty()) {
+                password.pop_back();    // Remove last character from password
+                cout << "\b \b";        // Move cursor back, print a space to erase '*', move cursor back again
+            }
+        } else {
+            password += ch;
+            cout << '*'; // Display an asterisk for each character typed
+        }
+    }
+    cout << endl;
+
+    // Restore old terminal settings
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+
+    return password;
+}
+
+// void resetPassword(int numOfpform,
+//                    accounts**& arr2p) {  // this is what i changes laila
+//   string pf;
+//   string password;
+//   cout << "Which account do you want to update: ";
+//   cin >> pf;
+//   cout << "Type in your new password please: ";
+
+//   bool psIsStrong = false;
+
+//   cin >> password;
+//   while (psIsStrong == false) {
+//     if (passwordChecker(password, true) >= 4) {  // update the details of this later
+//       psIsStrong = true;
+//     } else {
+//       cout << "Password isn't strong enough, please re-enter your password: ";
+//       cin >> password;
+//     }
+//   }
+
+//   for (int i = 0; i < numOfpform; i++) {
+//     if (arr2p[i]->getPlatform() == pf) {
+//       arr2p[i]->setPassword(password);
+//     }
+//   }
+// }
