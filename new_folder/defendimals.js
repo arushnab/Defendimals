@@ -125,3 +125,39 @@ async function checkWebsite() {
 
     updateStats();
 }
+
+
+// Function to check website safety using Google Safe Browsing API
+async function checkWebsiteSafety(url) {
+    const apiKey = 'AIzaSyBQ6A1Opyx0Res0OZo_NJBfn7GTkzUtHBw'; // replace with your API key
+    const safeBrowsingUrl = `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${apiKey}`;
+    
+    const body = {
+        client: {
+            clientId: "cyberPetApp",
+            clientVersion: "1.0"
+        },
+        threatInfo: {
+            threatTypes: ["MALWARE", "SOCIAL_ENGINEERING"],
+            platformTypes: ["ANY_PLATFORM"],
+            threatEntryTypes: ["URL"],
+            threatEntries: [{ url }]
+        }
+    };
+
+    try {
+        const response = await fetch(safeBrowsingUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+
+        const result = await response.json();
+        // If result contains matches, the URL is unsafe
+        return result.matches ? true : false;
+    } catch (error) {
+        console.error("Error in Safe Browsing API:", error);
+        throw error;
+    }
+}
+
